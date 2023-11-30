@@ -13,7 +13,8 @@ module.exports = async (req, res, next) => {
           success: false,
         });
       } else {
-        req.body.userId = decode.id;
+        console.log(decode);
+        req.userId = decode.id;
         next();
       }
     });

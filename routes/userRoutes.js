@@ -27,7 +27,7 @@ router.post("/register", registerController);
 router.post("/register-verify", registerVerifyController);
 
 //Auth || POST
-router.post("/getUserData", authMiddleware, authController);
+router.get("/getUserData", authMiddleware, authController);
 
 //APply Doctor || POST
 router.post("/apply-doctor", authMiddleware, applyDoctorController);
