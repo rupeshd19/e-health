@@ -53,7 +53,8 @@ const registerController = async (req, res) => {
       });
     }
     if (existingUser) {
-      existingUser.otp = Math.floor(100000 + Math.random() * 900000).toString();
+      var otp = Math.floor(100000 + Math.random() * 900000).toString();
+      existingUser.otp = otp;
       const temp = await sendOTPByEmail(req.body.email, otp);
       if (temp) {
         return res.status(500).send({
