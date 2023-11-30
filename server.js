@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const sequelize = require("./models/index");
 // const authMiddleware = require("./middlewares/authMiddleware");
+const cors = require("cors");
 
 //dotenv conig
 dotenv.config({
@@ -33,6 +34,9 @@ const app = express();
 //middlewares
 app.use(express.json());
 app.use(morgan("dev"));
+
+// solve cors error
+app.use(cors());
 
 //routes
 app.use("/api/v1/user", require("./routes/userRoutes"));
