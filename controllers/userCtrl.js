@@ -13,7 +13,7 @@ async function sendOTPByEmail(email, otp) {
     service: "gmail",
     auth: {
       user: "doctorapp1978@gmail.com", // Your email address
-      pass: "", // Your email password or app-specific password
+      pass: "kaqt covm slxn psgz", // Your email password or app-specific password
     },
   });
 
