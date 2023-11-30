@@ -9,7 +9,7 @@ const cors = require("cors");
 
 //dotenv conig
 dotenv.config({
-  path: "./routes/env",
+  path: "./routes/.env",
 });
 
 // table creation

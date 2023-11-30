@@ -1,5 +1,8 @@
 const JWT = require("jsonwebtoken");
-
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./routes/.env",
+});
 module.exports = async (req, res, next) => {
   try {
     const token = req.headers["authorization"].split(" ")[1];

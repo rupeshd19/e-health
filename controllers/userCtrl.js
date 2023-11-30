@@ -5,7 +5,10 @@ const doctorModel = require("../models/doctorModel");
 const appointmentModel = require("../models/appointmentModel");
 const moment = require("moment");
 const nodemailer = require("nodemailer");
-
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./routes/.env",
+});
 // send otp via mail
 async function sendOTPByEmail(email, otp) {
   // Create a nodemailer transporter using your email service credentials
@@ -133,7 +136,7 @@ const loginController = async (req, res) => {
         .send({ message: "Invalid Email or Password", success: false });
     }
 
-    const token = jwt.sign({ id: user._id }, "Rupesh", {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
@@ -146,7 +149,7 @@ const loginController = async (req, res) => {
 
 const authController = async (req, res) => {
   try {
-    const user = await userModel.findByPk(req.body.userId);
+    const user = await userModel.findByPk(req.body.id);
     user.password = undefined;
     if (!user) {
       return res.status(200).send({
