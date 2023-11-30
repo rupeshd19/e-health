@@ -46,10 +46,23 @@ const registerController = async (req, res) => {
     const existingUser = await userModel.findOne({
       where: { email: req.body.email },
     });
+    if (existingUser && existingUser.isVerified == 1) {
+      return res.status(200).send({
+        message: "already verified , go to login page",
+        success: false,
+      });
+    }
     if (existingUser) {
-      return res
-        .status(200)
-        .send({ message: "User Already Exists", success: false });
+      existingUser.otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const temp = await sendOTPByEmail(req.body.email, otp);
+      if (temp) {
+        return res.status(500).send({
+          success: false,
+          message: "can not send email, please check the email",
+        });
+      }
+      await existingUser.save();
+      return res.status(201).send({ message: "verify again", success: true });
     }
 
     const password = req.body.password;
@@ -60,7 +73,7 @@ const registerController = async (req, res) => {
     //send opt by email
     const temp = await sendOTPByEmail(req.body.email, otp);
     if (temp) {
-      res.status(500).send({
+      return res.status(500).send({
         success: false,
         message: "can not send email, please check the email",
       });
