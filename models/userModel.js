@@ -2,6 +2,14 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("./index");
 
 const userModel = sequelize.define("userModel", {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -17,12 +25,12 @@ const userModel = sequelize.define("userModel", {
   otp: {
     type: DataTypes.STRING,
   },
-  isAdmin: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
   isPatient: {
     type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+  pastDiseases: {
+    type: DataTypes.STRING,
   },
   notification: {
     type: DataTypes.JSON,

@@ -143,6 +143,12 @@ const loginController = async (req, res) => {
         redirect: "/api/v1/user/register-verify",
       });
     }
+    // check wheteher user is patient or doctor
+    if (user.isPatient != req.body.isPatient) {
+      return res
+        .status(200)
+        .send({ message: "Invalid patient or doctor option ", success: false });
+    }
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
       return res

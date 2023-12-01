@@ -4,17 +4,11 @@ const sequelize = require("./index");
 const doctorModel = sequelize.define(
   "doctorModel",
   {
-    userId: {
-      type: DataTypes.STRING,
-    },
-    firstName: {
+    name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -22,9 +16,6 @@ const doctorModel = sequelize.define(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    website: {
-      type: DataTypes.STRING,
     },
     address: {
       type: DataTypes.STRING,
