@@ -15,6 +15,7 @@ module.exports = async (req, res, next) => {
       } else {
         console.log(decode);
         req.userId = decode.id;
+        req.isPatient = decode.isPatient;
         next();
       }
     });

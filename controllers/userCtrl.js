@@ -42,19 +42,37 @@ async function sendOTPByEmail(email, otp) {
 // Register callback
 const registerController = async (req, res) => {
   try {
-    await userModel.sync();
-    const existingUser = await userModel.findOne({
-      where: { email: req.body.email },
-    });
-    if (existingUser && existingUser.isVerified == 1) {
-      return res.status(200).send({
-        message: "already verified , go to login page",
-        success: false,
+    if (req.body.isPatient) {
+      await userModel.sync();
+      const existingUser = await userModel.findOne({
+        where: { email: req.body.email },
       });
-    }
-    if (existingUser) {
+      if (existingUser && existingUser.isVerified == 1) {
+        return res.status(200).send({
+          message: "already verified , go to login page",
+          success: false,
+        });
+      }
+      if (existingUser) {
+        var otp = Math.floor(100000 + Math.random() * 900000).toString();
+        existingUser.otp = otp;
+        const temp = await sendOTPByEmail(req.body.email, otp);
+        if (temp) {
+          return res.status(500).send({
+            success: false,
+            message: "can not send email, please check the email",
+          });
+        }
+        await existingUser.save();
+        return res.status(201).send({ message: "verify again", success: true });
+      }
+
+      const password = req.body.password;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      req.body.password = hashedPassword;
       var otp = Math.floor(100000 + Math.random() * 900000).toString();
-      existingUser.otp = otp;
+      //send opt by email
       const temp = await sendOTPByEmail(req.body.email, otp);
       if (temp) {
         return res.status(500).send({
@@ -62,29 +80,61 @@ const registerController = async (req, res) => {
           message: "can not send email, please check the email",
         });
       }
-      await existingUser.save();
-      return res.status(201).send({ message: "verify again", success: true });
-    }
+      const newUser = await userModel.create({
+        ...req.body,
+        otp: otp,
+      });
+    } else {
+      // for doctor registration
+      await doctorModel.sync();
+      const existingDoctor = await doctorModel.findOne({
+        where: { email: req.body.email },
+      });
+      if (existingDoctor && existingDoctor.isVerified == 1) {
+        return res.status(200).send({
+          message: " doctor is already verified , go to login page",
+          success: false,
+        });
+      }
+      if (existingDoctor) {
+        var otp = Math.floor(100000 + Math.random() * 900000).toString();
+        existingUser.otp = otp;
+        const temp = await sendOTPByEmail(req.body.email, otp);
+        if (temp) {
+          return res.status(500).send({
+            success: false,
+            message: "can not send email, please check the email id",
+          });
+        }
+        await existingDoctor.save();
+        return res
+          .status(201)
+          .send({ message: "verify the doctor again", success: true });
+      }
 
-    const password = req.body.password;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    req.body.password = hashedPassword;
-    var otp = Math.floor(100000 + Math.random() * 900000).toString();
-    //send opt by email
-    const temp = await sendOTPByEmail(req.body.email, otp);
-    if (temp) {
-      return res.status(500).send({
-        success: false,
-        message: "can not send email, please check the email",
+      const password = req.body.password;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      req.body.password = hashedPassword;
+      var otp = Math.floor(100000 + Math.random() * 900000).toString();
+      //send opt by email
+      const temp = await sendOTPByEmail(req.body.email, otp);
+      if (temp) {
+        return res.status(500).send({
+          success: false,
+          message: "can not send email, please check the email",
+        });
+      }
+      const newUser = await doctorModel.create({
+        ...req.body,
+        otp: otp,
       });
     }
-    const newUser = await userModel.create({
-      ...req.body,
-      otp: otp,
-    });
+    // else for doctor ends here
 
-    res.status(201).send({ message: "Register Successfully", success: true });
+    res
+      .status(201)
+      .send({ message: " Registered Successfully", success: true });
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -97,16 +147,27 @@ const registerController = async (req, res) => {
 // verify user registration
 const registerVerifyController = async (req, res) => {
   try {
-    const user = await userModel.findOne({ where: { email: req.body.email } });
+    var table;
+    if (req.body.isPatient) {
+      table = userModel;
+    } else {
+      table = doctorModel;
+    }
+    user = await table.findOne({ where: { email: req.body.email } });
     if (!user) {
       return res
         .status(200)
         .send({ message: "User not found", success: false });
     }
-
+    if (user.isVerified) {
+      return res.status(200).send({
+        message: "user is already verified , go to login page",
+        success: false,
+      });
+    }
     if (req.body.otp != user.otp) {
       return res.status(200).send({
-        message: "Invalid credentials , please chck your mail",
+        message: "Invalid credentials , please check your mail",
         success: false,
       });
     }
@@ -117,7 +178,7 @@ const registerVerifyController = async (req, res) => {
 
     res.status(201).send({
       success: true,
-      message: "user account verified",
+      message: " account is verified",
     });
   } catch (error) {
     console.log(error);
@@ -130,7 +191,13 @@ const registerVerifyController = async (req, res) => {
 // Login callback
 const loginController = async (req, res) => {
   try {
-    const user = await userModel.findOne({ where: { email: req.body.email } });
+    var table;
+    if (req.body.isPatient) {
+      console.log("my table is ", table);
+    } else {
+      table = doctorModel;
+    }
+    const user = await table.findOne({ where: { email: req.body.email } });
     if (!user) {
       return res
         .status(200)
@@ -143,12 +210,6 @@ const loginController = async (req, res) => {
         redirect: "/api/v1/user/register-verify",
       });
     }
-    // check wheteher user is patient or doctor
-    if (user.isPatient != req.body.isPatient) {
-      return res
-        .status(200)
-        .send({ message: "Invalid patient or doctor option ", success: false });
-    }
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
       return res
@@ -156,9 +217,13 @@ const loginController = async (req, res) => {
         .send({ message: "Invalid Email or Password", success: false });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { id: user.id, isPatient: req.body.isPatient },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
 
     res
       .status(200)
@@ -171,7 +236,13 @@ const loginController = async (req, res) => {
 // get personal data
 const authController = async (req, res) => {
   try {
-    const user = await userModel.findByPk(req.userId);
+    var table;
+    if (req.isPatient) {
+      table = userModel;
+    } else {
+      table = doctorModel;
+    }
+    const user = await table.findByPk(req.userId);
 
     if (!user) {
       return res.status(200).send({
@@ -198,7 +269,13 @@ const authController = async (req, res) => {
 // update patient profile controller
 const updatePatientProfileController = async (req, res) => {
   try {
-    const user = await userModel.findByPk(req.userId);
+    var table;
+    if (req.isPatient) {
+      table = userModel;
+    } else {
+      table = doctorModel;
+    }
+    const user = await table.findByPk(req.userId);
     if (!user) {
       return res.status(200).send({
         message: "user not found, with user id " + req.userId,
@@ -207,16 +284,27 @@ const updatePatientProfileController = async (req, res) => {
     }
     user.name = req.body.name;
     user.phone = req.body.phone;
-    user.pastDiseases = req.body.pastDiseases;
+    if (req.isPatient) {
+      //update patient data
+      user.pastDiseases = req.body.pastDiseases;
+    } else {
+      //update doctor data
+      user.address = req.body.address;
+      user.specialization = req.body.specialization;
+      user.experience = req.body.experience;
+      user.feesPerConsultation = req.body.feesPerConsultation;
+      user.timings = req.body.timings;
+    }
+
     await user.save();
     res.status(200).send({
       success: true,
-      message: "patient profile updated successfully",
+      message: " profile updated successfully",
     });
   } catch (error) {
     return res.status(500).send({
       success: false,
-      message: "error in updating patient profile ",
+      message: "error in updating profile ",
       error,
     });
   }
@@ -225,26 +313,47 @@ const updatePatientProfileController = async (req, res) => {
 //  Apply Doctor CTRL
 const applyDoctorController = async (req, res) => {
   try {
-    const newDoctor = await doctorModel.create({
-      ...req.body,
-      status: "pending",
-    });
-    const adminUser = await userModel.findOne({ where: { isAdmin: true } });
-    const notification = adminUser.notification || [];
-    notification.push({
-      type: "apply-doctor-request",
-      message: `${newDoctor.firstName} ${newDoctor.lastName} Has Applied For A Doctor Account`,
-      data: {
-        doctorId: newDoctor._id,
-        name: newDoctor.firstName + " " + newDoctor.lastName,
-        onClickPath: "/admin/doctors",
-      },
-    });
-    await userModel.update({ notification }, { where: { _id: adminUser._id } });
-    res.status(201).send({
-      success: true,
-      message: "Doctor Account Applied Successfully",
-    });
+    const user = await userModel.findByPk(req.userId);
+    if (!user) {
+      return res.status(200).send({
+        success: false,
+        message: "user not found",
+      });
+    }
+    // else if (user.isPatient) {
+    //   // user registered for patient can not apply for doctor
+    //   return res.status(200).send({
+    //     success: false,
+    //     message:
+    //       "you are not eligible to apply for doctor, please  register as a  doctor",
+    //   });
+    // }
+    console.log("id of applying doctor", user.id, req.userId);
+    const newDoctor = await doctorModel.create(
+      Object.assign(
+        {
+          doctorId: req.userId,
+          email: user.email,
+        },
+        req.body
+      )
+    );
+    // const adminUser = await userModel.findOne({ where: { isAdmin: true } });
+    // const notification = adminUser.notification || [];
+    // notification.push({
+    //   type: "apply-doctor-request",
+    //   message: `${newDoctor.firstName} ${newDoctor.lastName} Has Applied For A Doctor Account`,
+    //   data: {
+    //     doctorId: newDoctor._id,
+    //     name: newDoctor.firstName + " " + newDoctor.lastName,
+    //     onClickPath: "/admin/doctors",
+    //   },
+    // });
+    // await userModel.update({ notification }, { where: { _id: adminUser._id } });
+    // res.status(201).send({
+    //   success: true,
+    //   message: "Doctor Account Applied Successfully",
+    // });
   } catch (error) {
     console.log(error);
     res.status(500).send({

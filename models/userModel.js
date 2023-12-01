@@ -27,7 +27,6 @@ const userModel = sequelize.define("userModel", {
   },
   isPatient: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true,
   },
   pastDiseases: {
     type: DataTypes.STRING,
