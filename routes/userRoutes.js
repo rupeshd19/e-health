@@ -11,6 +11,7 @@ const {
   bookingAvailabilityController,
   userAppointmentsController,
   registerVerifyController,
+  updatePatientProfileController,
 } = require("../controllers/userCtrl");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -28,6 +29,9 @@ router.post("/register-verify", registerVerifyController);
 
 //Auth || POST
 router.get("/getUserData", authMiddleware, authController);
+
+// update profile || post
+router.post("/updateProfile", authMiddleware, updatePatientProfileController);
 
 //APply Doctor || POST
 router.post("/apply-doctor", authMiddleware, applyDoctorController);

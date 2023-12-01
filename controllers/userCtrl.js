@@ -168,7 +168,7 @@ const loginController = async (req, res) => {
     res.status(500).send({ message: `Error in Login CTRL ${error.message}` });
   }
 };
-
+// get personal data
 const authController = async (req, res) => {
   try {
     const user = await userModel.findByPk(req.userId);
@@ -179,15 +179,8 @@ const authController = async (req, res) => {
           "requested user is not found in database, with user id " + req.userId,
         success: false,
       });
-    }
-
-    user.password = undefined;
-    if (!user) {
-      return res.status(200).send({
-        message: "User not found",
-        success: false,
-      });
     } else {
+      user.password = undefined;
       res.status(200).send({
         success: true,
         data: user,
@@ -198,6 +191,32 @@ const authController = async (req, res) => {
     res.status(500).send({
       message: "Auth error",
       success: false,
+      error,
+    });
+  }
+};
+// update patient profile controller
+const updatePatientProfileController = async (req, res) => {
+  try {
+    const user = await userModel.findByPk(req.userId);
+    if (!user) {
+      return res.status(200).send({
+        message: "user not found, with user id " + req.userId,
+        success: false,
+      });
+    }
+    user.name = req.body.name;
+    user.phone = req.body.phone;
+    user.pastDiseases = req.body.pastDiseases;
+    await user.save();
+    res.status(200).send({
+      success: true,
+      message: "patient profile updated successfully",
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "error in updating patient profile ",
       error,
     });
   }
@@ -401,6 +420,7 @@ module.exports = {
   loginController,
   registerController,
   authController,
+  updatePatientProfileController,
   applyDoctorController,
   getAllNotificationController,
   deleteAllNotificationController,
