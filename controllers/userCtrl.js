@@ -193,7 +193,7 @@ const loginController = async (req, res) => {
   try {
     var table;
     if (req.body.isPatient) {
-      console.log("my table is ", table);
+      table = userModel;
     } else {
       table = doctorModel;
     }
@@ -266,7 +266,7 @@ const authController = async (req, res) => {
     });
   }
 };
-// update patient profile controller
+// update patient/doctor profile controller
 const updatePatientProfileController = async (req, res) => {
   try {
     var table;
@@ -311,6 +311,7 @@ const updatePatientProfileController = async (req, res) => {
 };
 
 //  Apply Doctor CTRL
+// thsi is integrated in register controller itself
 const applyDoctorController = async (req, res) => {
   try {
     const user = await userModel.findByPk(req.userId);
@@ -416,7 +417,8 @@ const deleteAllNotificationController = async (req, res) => {
 const getAllDoctorsController = async (req, res) => {
   try {
     const doctors = await doctorModel.findAll({
-      where: { status: "approved" },
+      // where: { status: "approved" },
+      where: { isVerified },
     });
     res.status(200).send({
       success: true,
