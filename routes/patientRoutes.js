@@ -6,6 +6,7 @@ const {
   getPatientInfoController,
   bookAppointmentController,
   bookingAvailabilityController,
+  pastAppointmentsController,
 } = require("../controllers/patientCtrl");
 
 //router object
@@ -29,4 +30,6 @@ router.get(
   authMiddleware,
   bookingAvailabilityController
 );
+// past appointments || GET
+router.get("/past-appointments", authMiddleware, pastAppointmentsController);
 module.exports = router;

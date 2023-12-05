@@ -272,11 +272,38 @@ const bookingAvailabilityController = async (req, res) => {
     });
   }
 };
-
+const pastAppointmentsController = async (req, res) => {
+  try {
+    const patientId = req.userId;
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const currentTime = new Date().toTimeString().slice(0, 8);
+    const pastAppointments = await appointmentModel.findAll({
+      attributes: { exclude: ["createdAt", "updatedAt"] },
+      where: {
+        patientId: patientId,
+        date: { [sequelize.Op.lt]: currentDate },
+        startTime: { [sequelize.Op.lt]: currentTime },
+      },
+    });
+    console.log("Toaday is : ", currentDate);
+    return res.status(200).send({
+      success: true,
+      data: pastAppointments,
+      message: "all past appointments are ",
+    });
+  } catch (error) {
+    return res.status(400).send({
+      success: false,
+      error,
+      message: "error in fetching past appointments",
+    });
+  }
+};
 module.exports = {
   getAllDoctorsController,
   updatePatientProfileController,
   getPatientInfoController,
   bookAppointmentController,
   bookingAvailabilityController,
+  pastAppointmentsController,
 };
