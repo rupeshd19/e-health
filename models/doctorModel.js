@@ -32,6 +32,14 @@ const doctorModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    pincode: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     specialization: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -48,8 +56,12 @@ const doctorModel = sequelize.define(
     //   type: DataTypes.STRING,
     //   defaultValue: "pending",
     // },
-    timings: {
-      type: DataTypes.JSON, // Assuming you want to store JSON data for timings
+    openTime: {
+      type: DataTypes.TIME,
+      allowNull: true,
+    },
+    closeTime: {
+      type: DataTypes.TIME,
       allowNull: true,
     },
   },

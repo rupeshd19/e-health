@@ -5,9 +5,10 @@ const userModel = require("../models/userModel");
 // get doctor info
 const getDoctorInfoController = async (req, res) => {
   try {
-    const doctor = await DoctorModel.findOne({
-      where: { userId: req.body.userId },
+    const doctor = await doctorModel.findOne({
+      where: { id: req.userId },
     });
+    doctor.password = undefined;
     res.status(200).send({
       success: true,
       message: "Doctor data fetch success",
@@ -24,10 +25,10 @@ const getDoctorInfoController = async (req, res) => {
 };
 
 // update doctor profile
-const updateProfileController = async (req, res) => {
+const updateDoctorProfileController = async (req, res) => {
   try {
-    const doctor = await DoctorModel.update(req.body, {
-      where: { userId: req.body.userId },
+    const doctor = await doctorModel.update(req.body, {
+      where: { id: req.userId },
     });
     res.status(201).send({
       success: true,
@@ -47,7 +48,7 @@ const updateProfileController = async (req, res) => {
 // get single doctor by id
 const getDoctorByIdController = async (req, res) => {
   try {
-    const doctor = await DoctorModel.findOne({
+    const doctor = await doctorModel.findOne({
       where: { id: req.body.doctorId },
     });
     res.status(200).send({
@@ -126,7 +127,7 @@ const updateStatusController = async (req, res) => {
 
 module.exports = {
   getDoctorInfoController,
-  updateProfileController,
+  updateDoctorProfileController,
   getDoctorByIdController,
   doctorAppointmentsController,
   updateStatusController,

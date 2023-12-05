@@ -4,7 +4,7 @@ const sequelize = require("./index");
 const appointmentModel = sequelize.define(
   "appointmentModel",
   {
-    userId: {
+    patientId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -12,26 +12,29 @@ const appointmentModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    doctorInfo: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    userInfo: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     date: {
-      type: DataTypes.STRING,
+      type: DataTypes.DATE,
       allowNull: false,
+    },
+    startTime: {
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+    note: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     status: {
       type: DataTypes.STRING,
-      allowNull: false,
       defaultValue: "pending",
     },
-    time: {
+    vclink: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
+    },
+    prescription: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   { timestamps: true }

@@ -39,9 +39,10 @@ app.use(morgan("dev"));
 app.use(cors());
 
 //routes
-app.use("/api/v1/user", require("./routes/userRoutes"));
+app.use("/api/v1/user", require("./routes/userRoutes")); // handle all login and register requests
 app.use("/api/v1/admin", require("./routes/adminRoutes"));
-app.use("/api/v1/doctor", require("./routes/doctorRoutes"));
+app.use("/api/v1/doctor", require("./routes/doctorRoutes")); // handle all doctor's requests
+app.use("/api/v1/patient", require("./routes/patientRoutes")); // handle all patient's request
 
 //port
 const port = 9000;
