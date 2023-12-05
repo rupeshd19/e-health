@@ -11,6 +11,39 @@ dotenv.config({
   path: "./routes/.env",
 });
 const dayjs = require("dayjs");
+
+function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
+  const slots = [];
+
+  // Parse openTime and closeTime strings to Date objects
+  const openDateTime = new Date(`1970-01-01T${openTime}`);
+  const closeDateTime = new Date(`1970-01-01T${closeTime}`);
+
+  // Calculate the number of milliseconds in the slot duration
+  const slotDurationMs = slotDuration * 60 * 1000;
+
+  // Initialize the current time to the open time
+  let currentTime = openDateTime;
+
+  while (currentTime < closeDateTime) {
+    const endTime = new Date(currentTime.getTime() + slotDurationMs);
+
+    const startTimeString = currentTime.toTimeString().slice(0, 8); // Extract 'HH:mm:ss'
+    const endTimeString = endTime.toTimeString().slice(0, 8); // Extract 'HH:mm:ss'
+
+    // Check if the startTime is in the startTimeList
+    if (!startTimeList.includes(startTimeString)) {
+      // Add the slot to the list
+      slots.push({ startTime: startTimeString, endTime: endTimeString });
+    }
+
+    // Move to the next slot
+    currentTime = endTime;
+  }
+
+  return slots;
+}
+
 // get patient info
 const getPatientInfoController = async (req, res) => {
   try {
@@ -85,20 +118,84 @@ const getAllDoctorsController = async (req, res) => {
 // BOOK APPOINTMENT
 const bookAppointmentController = async (req, res) => {
   try {
+    const doctorId = req.body.doctorId;
+    const date = req.body.date;
+    const time = req.body.startTime;
+    var currentDate = new Date();
+    var providedDate = new Date(`${date}T${time}`);
+    // the date and time should be beyond current time
+    if (providedDate < currentDate) {
+      return res.status(209).send({
+        success: false,
+        message: "plase provide future date and time",
+      });
+    }
+    // fetch requested doctor details
     const doctor = await doctorModel.findOne({
-      attributes: ["openTime", "closeTime"],
-      where: { id: req.body.doctorId },
+      attributes: ["openTime", "closeTime", "slotDuration"],
+      where: {
+        id: doctorId,
+        isVerified: true,
+      },
     });
-    const newAppointment = await appointmentModel.create(req.body);
-    // send notification to doctor|| optional
-    // const doctor = await doctorModel.findByPk(req.body.doctorInfo.userId);
-    // user.notification.push({
-    //   type: "New-appointment-request",
-    //   message: `A New Appointment Request from ${req.body.userInfo.name}`,
-    //   onClickPath: "/patient/appointments",
-    // });
-    // await doctor.save();
+    // check if doctor exists or not
+    if (!doctor) {
+      return res.status(209).send({
+        success: false,
+        message: "selected doctor does not exist",
+      });
+    }
+    // check whether selected time slot is within doctor timings
+    const openDateTime = new Date(`1970-01-01T${doctor.openTime}`);
+    const closeDateTime = new Date(`1970-01-01T${doctor.closeTime}`);
+    const slotDateTime = new Date(`1970-01-01T${time}`);
 
+    // Check if the slotDateTime is outside the range [openTime, closeTime - slotDuration]
+    if (
+      slotDateTime < openDateTime ||
+      slotDateTime >=
+        new Date(closeDateTime - doctor.slotDuration * 60 * 1000 + 1000)
+    ) {
+      return res.status(209).send({
+        success: false,
+        message: "Doctor is not available at this time",
+      });
+    }
+    let lowerlimit = new Date(
+      new Date(`${date}T${time}`).getTime() -
+        doctor.slotDuration * 60 * 1000 +
+        1000
+    )
+      .toTimeString()
+      .slice(0, 8);
+    let upperlimit = new Date(
+      new Date(`${date}T${time}`).getTime() +
+        doctor.slotDuration * 60 * 1000 -
+        1000
+    )
+      .toTimeString()
+      .slice(0, 8);
+
+    // check if doctor has any other appointments on selected date and time
+    const existingAppointments = await appointmentModel.findOne({
+      attributes: ["id"],
+      where: {
+        doctorId,
+        date: new Date(date),
+        startTime: {
+          [sequelize.Op.between]: [lowerlimit, upperlimit],
+        },
+      },
+    });
+    //if yes return false
+    if (existingAppointments) {
+      return res.status(209).send({
+        success: false,
+        message: "slot is not available, check available slots",
+      });
+    }
+    // create an appointment
+    await appointmentModel.create(req.body);
     res.status(200).send({
       success: true,
       message: "Appointment Booked successfully",
@@ -117,54 +214,55 @@ const bookAppointmentController = async (req, res) => {
 const bookingAvailabilityController = async (req, res) => {
   try {
     await appointmentModel.sync();
-    // Convert datetime string to Date object
-    const selectedDateTime = req.body.datetime;
-    // Extract time and date components
-    // DateFormat formatter = new SimpleDateFormat("HH:mm");
-    const selectedTime = selectedDateTime.split("T")[1];
-    const selectedDate = selectedDateTime.split("T")[0];
+    const doctorId = req.body.doctorId;
+    // check requested date should not be past date
+    var currentDate = new Date();
+    var providedDate = new Date(req.body.date);
 
-    // Check if patient selected beyond doctor's open and close timings
-    if (
-      selectedTime < req.body.openTime ||
-      selectedTime >= req.body.closeTime
-    ) {
-      return res.status(202).json({
+    providedDate.setHours(currentDate.getHours());
+    if (providedDate < currentDate) {
+      res.status(209).send({
         success: false,
-        message: "Doctor is not available at this time.",
+        message: "Please provide future date",
       });
     }
-    // Check for existing appointments at the selected time
-    const fromTime = moment(selectedTime, "HH:mm")
-      .subtract(1, "hours")
-      .format("hh:mm");
+    // fetch doctor details
+    const doctor = await doctorModel.findOne({
+      attributes: ["openTime", "closeTime", "slotDuration"],
+      where: { id: req.body.doctorId, isVerified: true },
+    });
+    // if doctor not found return
+    if (!doctor) {
+      return res.status(209).send({
+        success: false,
+        message: "doctor not found",
+      });
+    }
 
-    const toTime = moment(selectedTime, "HH:mm")
-      .add(1, "hours")
-      .format("hh:mm");
-    console.log(fromTime, toTime, "deepak", typeof fromTime);
-    const doctorId = req.body.doctorId;
-    const existingAppointments = await appointmentModel.findOne({
-      doctorId,
-      date: new Date(selectedDate),
-      startTime: {
-        $gte: fromTime,
-        $lte: toTime,
+    // fetch startTime of all booked slots for a doctor on a given date
+    const existingAppointments = await appointmentModel.findAll({
+      attributes: ["startTime"],
+      where: {
+        doctorId,
+        date: new Date(req.body.date),
       },
     });
-
-    console.log("appointments : ", existingAppointments.id);
-    if (existingAppointments.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "Yes, the current slot is available.",
-      });
-    } else {
-      return res.status(409).json({
-        success: false,
-        message: "Slot is not available.",
-      });
-    }
+    // save startTime of booked slot in startTimeList
+    const startTimeList = existingAppointments.map(
+      (appointment) => appointment.startTime
+    );
+    // generate all  available slots
+    const allSlots = generateTimeSlots(
+      doctor.openTime,
+      doctor.closeTime,
+      doctor.slotDuration,
+      startTimeList
+    );
+    return res.status(200).send({
+      success: true,
+      message: "here is list of available slots",
+      data: allSlots,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({

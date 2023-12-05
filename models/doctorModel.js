@@ -44,8 +44,12 @@ const doctorModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    slotDuration: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     experience: {
-      type: DataTypes.INTEGER, // Adjust data type based on your requirement
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     feesPerConsultation: {
