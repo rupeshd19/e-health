@@ -195,7 +195,7 @@ const bookAppointmentController = async (req, res) => {
       });
     }
     // create an appointment
-    await appointmentModel.create(req.body);
+    await appointmentModel.create({ ...req.body, patientId: req.userId });
     res.status(200).send({
       success: true,
       message: "Appointment Booked successfully",
@@ -219,7 +219,7 @@ const bookingAvailabilityController = async (req, res) => {
     var currentDate = new Date();
     var providedDate = new Date(req.body.date);
 
-    providedDate.setHours(currentDate.getHours());
+    providedDate.setHours(currentDate.getHours() + 1);
     if (providedDate < currentDate) {
       res.status(209).send({
         success: false,
