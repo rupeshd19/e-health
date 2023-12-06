@@ -16,8 +16,8 @@ const router = express.Router();
 // update profile || post
 router.post("/updateProfile", authMiddleware, updatePatientProfileController);
 
-//get all doctors data || GET
-router.get("/getAllDoctors", authMiddleware, getAllDoctorsController);
+//get all doctors data || POST
+router.post("/getAllDoctors", authMiddleware, getAllDoctorsController);
 
 //get patient information || GET
 router.get("/getPatientInfo", authMiddleware, getPatientInfoController);
