@@ -34,7 +34,10 @@ function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
     // Check if the startTime is in the startTimeList
     if (!startTimeList.includes(startTimeString)) {
       // Add the slot to the list
-      slots.push({ startTime: startTimeString, endTime: endTimeString });
+      slots.push({
+        startTime: startTimeString.slice(0, 5),
+        endTime: endTimeString.slice(0, 5),
+      });
     }
 
     // Move to the next slot

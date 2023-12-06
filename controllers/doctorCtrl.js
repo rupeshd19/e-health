@@ -121,29 +121,18 @@ const futureAppointmentsController = async (req, res) => {
 };
 
 // update appointment status
-const updateStatusController = async (req, res) => {
+const confirmAppointmentController = async (req, res) => {
   try {
-    const { appointmentsId, status } = req.body;
-    await AppointmentModel.update(
-      { status },
-      { where: { id: appointmentsId } }
+    const appointmentId = req.body;
+    // write logic that we recieved payment from patient for this appointment
+    await appointmentModel.update(
+      { status: "confirmed" },
+      { where: { id: appointmentId } }
     );
-
-    const user = await UserModel.findOne({
-      where: { id: appointments.userId },
-    });
-    const notification = user.notification || [];
-    notification.push({
-      type: "status-updated",
-      message: `Your appointment has been updated ${status}`,
-      onClickPath: "/doctor-appointments",
-    });
-
-    await user.update({ notification });
 
     res.status(200).send({
       success: true,
-      message: "Appointment status updated",
+      message: "Appointment status is confirmed",
     });
   } catch (error) {
     console.log(error);
@@ -161,5 +150,5 @@ module.exports = {
   getDoctorByIdController,
   pastAppointmentsController,
   futureAppointmentsController,
-  updateStatusController,
+  confirmAppointmentController,
 };
