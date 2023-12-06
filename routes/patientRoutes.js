@@ -25,8 +25,8 @@ router.get("/getPatientInfo", authMiddleware, getPatientInfoController);
 //BOOK APPOINTMENT || POST
 router.post("/book-appointment", authMiddleware, bookAppointmentController);
 
-//Booking Avliability || GET
-router.get(
+//Booking Avliability || POST
+router.post(
   "/booking-availbility",
   authMiddleware,
   bookingAvailabilityController
