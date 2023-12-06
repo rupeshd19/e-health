@@ -40,7 +40,7 @@ const doctorModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    specialization: {
+    speciality: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -52,7 +52,7 @@ const doctorModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    feesPerConsultation: {
+    price: {
       type: DataTypes.INTEGER, // Assuming fees can be a decimal
       allowNull: true,
     },

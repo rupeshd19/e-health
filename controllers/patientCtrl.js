@@ -107,14 +107,14 @@ const getAllDoctorsController = async (req, res) => {
       };
     }
     // add speciality filter
-    if (req.body.specialization) {
-      whereClause.specialization = {
-        [sequelize.Op.like]: `%${req.body.specialization}%`,
+    if (req.body.speciality) {
+      whereClause.speciality = {
+        [sequelize.Op.like]: `%${req.body.speciality}%`,
       };
     }
     // add max price filter
     if (req.body.maxPrice) {
-      whereClause.feesPerConsultation = {
+      whereClause.price = {
         [sequelize.Op.lte]: req.body.maxPrice,
       };
     }
