@@ -7,6 +7,7 @@ const {
   bookAppointmentController,
   bookingAvailabilityController,
   pastAppointmentsController,
+  futureAppointmentsController,
 } = require("../controllers/patientCtrl");
 
 //router object
@@ -32,4 +33,12 @@ router.get(
 );
 // past appointments || GET
 router.get("/past-appointments", authMiddleware, pastAppointmentsController);
+
+// future appointments || GET
+router.get(
+  "/future-appointments",
+  authMiddleware,
+  futureAppointmentsController
+);
+
 module.exports = router;

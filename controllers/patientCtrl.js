@@ -276,16 +276,13 @@ const pastAppointmentsController = async (req, res) => {
   try {
     const patientId = req.userId;
     const currentDate = new Date().toISOString().slice(0, 10);
-    const currentTime = new Date().toTimeString().slice(0, 8);
     const pastAppointments = await appointmentModel.findAll({
       attributes: { exclude: ["createdAt", "updatedAt"] },
       where: {
         patientId: patientId,
         date: { [sequelize.Op.lt]: currentDate },
-        startTime: { [sequelize.Op.lt]: currentTime },
       },
     });
-    console.log("Toaday is : ", currentDate);
     return res.status(200).send({
       success: true,
       data: pastAppointments,
@@ -299,6 +296,31 @@ const pastAppointmentsController = async (req, res) => {
     });
   }
 };
+
+const futureAppointmentsController = async (req, res) => {
+  try {
+    const patientId = req.userId;
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const futureAppointments = await appointmentModel.findAll({
+      attributes: { exclude: ["createdAt", "updatedAt"] },
+      where: {
+        patientId: patientId,
+        date: { [sequelize.Op.gte]: new Date(currentDate) },
+      },
+    });
+    return res.status(200).send({
+      success: true,
+      data: futureAppointments,
+      message: "all future appointments are ",
+    });
+  } catch (error) {
+    return res.status(400).send({
+      success: false,
+      error,
+      message: "error in fetching future appointments",
+    });
+  }
+};
 module.exports = {
   getAllDoctorsController,
   updatePatientProfileController,
@@ -306,4 +328,5 @@ module.exports = {
   bookAppointmentController,
   bookingAvailabilityController,
   pastAppointmentsController,
+  futureAppointmentsController,
 };
