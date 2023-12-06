@@ -236,6 +236,7 @@ const loginController = async (req, res) => {
       }
     );
     user.password = undefined;
+    user.isVerified = undefined;
     res.status(200).send({
       message: "Login Success",
       success: true,

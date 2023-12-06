@@ -2,9 +2,10 @@ const express = require("express");
 const {
   getDoctorInfoController,
   getDoctorByIdController,
-  doctorAppointmentsController,
   updateStatusController,
   updateDoctorProfileController,
+  pastAppointmentsController,
+  futureAppointmentsController,
 } = require("../controllers/doctorCtrl");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -18,11 +19,14 @@ router.post("/updateProfile", authMiddleware, updateDoctorProfileController);
 // GET SINGLE DOC INFO
 router.get("/getDoctorById", authMiddleware, getDoctorByIdController);
 
-//GET Appointments
+//GET past Appointments
+router.get("/past-appointments", authMiddleware, pastAppointmentsController);
+
+//GET future Appointments
 router.get(
-  "/doctor-appointments",
+  "/future-appointments",
   authMiddleware,
-  doctorAppointmentsController
+  futureAppointmentsController
 );
 
 //POST Update Status

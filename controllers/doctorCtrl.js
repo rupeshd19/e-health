@@ -6,9 +6,11 @@ const userModel = require("../models/userModel");
 const getDoctorInfoController = async (req, res) => {
   try {
     const doctor = await doctorModel.findOne({
+      attributes: {
+        exclude: ["password", "isVerified", "otp", "createdAt", "updatedAt"],
+      },
       where: { id: req.userId },
     });
-    doctor.password = undefined;
     res.status(200).send({
       success: true,
       message: "Doctor data fetch success",
@@ -28,6 +30,9 @@ const getDoctorInfoController = async (req, res) => {
 const updateDoctorProfileController = async (req, res) => {
   try {
     const doctor = await doctorModel.update(req.body, {
+      attributes: {
+        exclude: ["password", "isVerified", "otp", "createdAt", "updatedAt"],
+      },
       where: { id: req.userId },
     });
     res.status(201).send({
@@ -49,6 +54,9 @@ const updateDoctorProfileController = async (req, res) => {
 const getDoctorByIdController = async (req, res) => {
   try {
     const doctor = await doctorModel.findOne({
+      attributes: {
+        exclude: ["password", "isVerified", "otp", "createdAt", "updatedAt"],
+      },
       where: { id: req.body.doctorId },
     });
     res.status(200).send({
@@ -66,26 +74,48 @@ const getDoctorByIdController = async (req, res) => {
   }
 };
 
-// get doctor appointments
-const doctorAppointmentsController = async (req, res) => {
+// get doctor's all  appointments
+const pastAppointmentsController = async (req, res) => {
   try {
-    const doctor = await DoctorModel.findOne({
-      where: { userId: req.body.userId },
+    const doctorId = req.userId;
+    const pastAppointments = await appointmentModel.findAll({
+      attributes: { exclude: ["createdAt", "updatedAt"] },
+      where: { status: "completed" },
     });
-    const appointments = await AppointmentModel.findAll({
-      where: { doctorId: doctor.id },
-    });
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
-      message: "Doctor appointments fetched successfully",
-      data: appointments,
+      message: "all past appointements ",
+      pastAppointments,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       error,
-      message: "Error in fetching doctor appointments",
+      message: "Error in fetching doctor's past appointments",
+    });
+  }
+};
+
+// get doctor's all  appointments
+const futureAppointmentsController = async (req, res) => {
+  try {
+    const doctorId = req.userId;
+    const futureAppointments = await appointmentModel.findAll({
+      attributes: { exclude: ["createdAt", "updatedAt"] },
+      where: { status: "pending" },
+    });
+    return res.status(200).send({
+      success: true,
+      message: "all future appointements ",
+      futureAppointments,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      error,
+      message: "Error in fetching doctor's future appointments",
     });
   }
 };
@@ -129,6 +159,7 @@ module.exports = {
   getDoctorInfoController,
   updateDoctorProfileController,
   getDoctorByIdController,
-  doctorAppointmentsController,
+  pastAppointmentsController,
+  futureAppointmentsController,
   updateStatusController,
 };

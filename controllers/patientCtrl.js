@@ -48,6 +48,7 @@ function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
 const getPatientInfoController = async (req, res) => {
   try {
     const patient = await userModel.findOne({
+      attributes: ["id", "name", "phone", "email", "pastDiseases"],
       where: { id: req.userId },
     });
     res.status(200).send({
