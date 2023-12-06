@@ -96,9 +96,35 @@ const updatePatientProfileController = async (req, res) => {
 // GET ALL DOCTORS
 const getAllDoctorsController = async (req, res) => {
   try {
+    const whereClause = {};
+    // add verified doctor filter
+    whereClause.isVerified = true;
+    // add location filer
+    if (req.body.location) {
+      whereClause.city = {
+        [sequelize.Op.like]: `%${req.body.location}%`,
+      };
+    }
+    // add speciality filter
+    if (req.body.specialization) {
+      whereClause.specialization = {
+        [sequelize.Op.like]: `%${req.body.specialization}%`,
+      };
+    }
+    // add max price filter
+    if (req.body.maxPrice) {
+      whereClause.feesPerConsultation = {
+        [sequelize.Op.lte]: req.body.maxPrice,
+      };
+    }
+    // add gender filter this is not added yet
+    if (req.body.gender) {
+      whereClause.gender = req.body.gender;
+    }
+    console.log("where clause condtions are : ", whereClause);
     const doctors = await doctorModel.findAll({
-      // where: { status: "approved" },
-      where: { isVerified: true },
+      attributes: { exclude: ["password", "otp", "createdAt", "updatedAt"] },
+      where: whereClause,
     });
     res.status(200).send({
       success: true,

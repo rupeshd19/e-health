@@ -197,7 +197,18 @@ const loginController = async (req, res) => {
     } else {
       table = doctorModel;
     }
-    const user = await table.findOne({ where: { email: req.body.email } });
+    const user = await table.findOne({
+      attributes: {
+        exclude: [
+          "otp",
+          "notification",
+          "seenNotification",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+      where: { email: req.body.email },
+    });
     if (!user) {
       return res
         .status(200)
@@ -224,10 +235,14 @@ const loginController = async (req, res) => {
         expiresIn: "1d",
       }
     );
-
-    res
-      .status(200)
-      .send({ message: "Login Success", success: true, token, id: user.id });
+    user.password = undefined;
+    res.status(200).send({
+      message: "Login Success",
+      success: true,
+      token,
+      userId: user.id,
+      userInfo: user,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: `Error in Login CTRL ${error.message}` });
