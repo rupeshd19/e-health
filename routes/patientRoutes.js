@@ -8,6 +8,7 @@ const {
   bookingAvailabilityController,
   pastAppointmentsController,
   futureAppointmentsController,
+  joinVcController,
 } = require("../controllers/patientCtrl");
 
 //router object
@@ -40,5 +41,6 @@ router.get(
   authMiddleware,
   futureAppointmentsController
 );
-
+// POST join meeting as per appointmnet
+router.post("/join-vc", authMiddleware, joinVcController);
 module.exports = router;

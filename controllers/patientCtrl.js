@@ -7,6 +7,8 @@ const moment = require("moment");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const sequelize = require("sequelize");
+const axios = require("axios");
+const { response } = require("express");
 dotenv.config({
   path: "./routes/.env",
 });
@@ -389,6 +391,80 @@ const futureAppointmentsController = async (req, res) => {
     });
   }
 };
+// future appoinments controller ends
+
+// JOIN VC controller starts
+const joinVcController = async (req, res) => {
+  try {
+    const patientId = req.userId;
+    const appointmentId = req.body.appointmentId;
+    // check wheher the doctor is authorised to end requested vc
+    const appointment = await appointmentModel.findOne({
+      attributes: ["id", "patientId", "attendeePass"],
+      where: { id: appointmentId, patientId: patientId },
+      include: [
+        {
+          model: userModel,
+          attributes: ["name", "phone"],
+          as: "patient", // Use the alias you want for the patient association
+        },
+      ],
+    });
+    // check whther such appointment exist or not
+    if (!appointment) {
+      return res.status(209).send({
+        success: false,
+        message: "no appointment found for requested appointmentId",
+      });
+    }
+    // check if meeting is created or not
+    if (!appointment.attendeePass) {
+      return res.status(209).send({
+        success: false,
+        message: "meeting is not created yet",
+      });
+    }
+    //   join vc request  params
+    const params = {
+      requestName: "joinVC",
+      meetingID: appointment.patient.phone,
+      attendeePass: appointment.attendeePass,
+      joinName: appointment.patient.name,
+      apiKey: process.env.VC_KEY,
+    };
+    // send join VC request on samvad server
+    const response = await axios
+      .post(process.env.VC_URL, params, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+    console.log(params);
+    // if error send response message directly
+    if (response.data.statusCode != 200) {
+      return res.status(response.data.statusCode).send({
+        success: !response.data.isError,
+        message: response.data.message,
+        vclink: response.data.joinUrl,
+      });
+    }
+    return res.status(response.data.statusCode).send({
+      success: !response.data.isError,
+      message: " You can join now",
+      vclink: response.data.joinUrl,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "unable to join meeting",
+      error,
+    });
+  }
+};
+
 module.exports = {
   getAllDoctorsController,
   updatePatientProfileController,
@@ -397,4 +473,5 @@ module.exports = {
   bookingAvailabilityController,
   pastAppointmentsController,
   futureAppointmentsController,
+  joinVcController,
 };

@@ -231,11 +231,12 @@ const createVcController = async (req, res) => {
           },
           {
             where: { id: appointmentId },
-            s,
+            returning: true,
           }
         );
       } catch (error) {
-        res.status(209).send({
+        console.log("my eeror is : ", error);
+        return res.status(209).send({
           success: false,
           message: "error in updating appointment credentials",
           error,
@@ -300,7 +301,7 @@ const endVcController = async (req, res) => {
         message: "meeting is not running",
       });
     }
-    //   vc create params
+    //   end vc request  params
     const params = {
       requestName: "endVC",
       meetingID: appointment.patient.phone,
