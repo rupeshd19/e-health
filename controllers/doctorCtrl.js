@@ -164,6 +164,7 @@ const confirmAppointmentController = async (req, res) => {
     });
   }
 };
+
 // code for doctor to launch/ craete virtual confrence
 const createVcController = async (req, res) => {
   try {
@@ -188,6 +189,7 @@ const createVcController = async (req, res) => {
         },
       ],
     });
+    // check if request is valid
     if (!appointment) {
       return res.status(209).send({
         success: false,
@@ -201,7 +203,7 @@ const createVcController = async (req, res) => {
     //   vc create params
     const params = {
       requestName: "createVC",
-      meetingID: "9754264090", //appointment.patient.phone,
+      meetingID: appointment.patient.phone,
       meetingName: appointment.doctor.name + "Room ",
       modPass: modPass,
       attendeePass: attendeePass,
@@ -219,7 +221,7 @@ const createVcController = async (req, res) => {
       .catch(function (err) {
         console.log(err);
       });
-    if (response.data.isError) {
+    if (!response.data.isError) {
       // update appointment table and save modPass and attendeePass
       try {
         await appointmentModel.update(
@@ -229,6 +231,7 @@ const createVcController = async (req, res) => {
           },
           {
             where: { id: appointmentId },
+            s,
           }
         );
       } catch (error) {
@@ -260,8 +263,85 @@ const createVcController = async (req, res) => {
   }
 };
 // create vc end
-//endVC controller
 
+//endVC controller
+const endVcController = async (req, res) => {
+  try {
+    const doctorId = req.userId;
+    const appointmentId = req.body.appointmentId;
+    // check wheher the doctor is authorised to end requested vc
+    const appointment = await appointmentModel.findOne({
+      attributes: ["id", "doctorId", "patientId", "modPass"],
+      where: { id: appointmentId, doctorId: doctorId },
+      include: [
+        {
+          model: doctorModel,
+          attributes: ["name"],
+          as: "doctor", // Use the alias you want for the doctor association
+        },
+        {
+          model: userModel,
+          attributes: ["phone"],
+          as: "patient", // Use the alias you want for the patient association
+        },
+      ],
+    });
+    // check if request is valid
+    if (!appointment) {
+      return res.status(209).send({
+        success: false,
+        message: "no appointment found for requested appointmentId",
+      });
+    }
+    // check if meeting is running or not
+    if (!appointment.modPass) {
+      return res.status(209).send({
+        success: false,
+        message: "meeting is not running",
+      });
+    }
+    //   vc create params
+    const params = {
+      requestName: "endVC",
+      meetingID: appointment.patient.phone,
+      modPass: appointment.modPass,
+      apiKey: process.env.VC_KEY,
+    };
+    // send end VC request on samvad server
+    const response = await axios
+      .post(process.env.VC_URL, params, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+    // update modPass and attendee Pass in appoinrment table
+    if (!response.data.isError) {
+      await appointmentModel.update(
+        {
+          modPass: null,
+          attendeePass: null,
+          status: "completed",
+        },
+        {
+          where: { id: appointmentId },
+        }
+      );
+    }
+    return res.status(response.data.statusCode).send({
+      success: !response.data.isError,
+      message: response.data.message,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "unanle to end meeting",
+      error,
+    });
+  }
+};
 module.exports = {
   getDoctorInfoController,
   updateDoctorProfileController,
@@ -270,4 +350,5 @@ module.exports = {
   futureAppointmentsController,
   confirmAppointmentController,
   createVcController,
+  endVcController,
 };
