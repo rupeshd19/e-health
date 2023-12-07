@@ -27,7 +27,26 @@ const prescriptionModel = sequelize.define("prescriptionModel", {
     allowNull: false,
   },
 });
+// establish relation to appointmentModel
+prescriptionModel.belongsTo(appointmentModel, {
+  foreignKey: "appointmentId",
+  as: "appointment",
+});
+appointmentModel.hasMany(prescriptionModel, { foreignKey: "appointmentId" });
 
-prescriptionModel.belongsTo(appointmentModel);
-appointmentModel.hasMany(prescriptionModel);
+// establish relation to userModel
+prescriptionModel.belongsTo(userModel, {
+  foreignKey: "patientId",
+  as: "patient",
+});
+userModel.hasMany(prescriptionModel, { foreignKey: "patientId" });
+
+// establish relation to doctorModel
+prescriptionModel.belongsTo(doctorModel, {
+  foreignKey: "doctorId",
+  as: "doctor",
+});
+doctorModel.hasMany(prescriptionModel, { foreignKey: "doctorId" });
+
+// export model
 module.exports = prescriptionModel;

@@ -42,6 +42,14 @@ const AppointmentModel = sequelize.define(
       type: DataTypes.STRING,
       defaultValue: "pending",
     },
+    modPass: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    attendeePass: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     vclink: {
       type: DataTypes.STRING,
       allowNull: true,

@@ -310,12 +310,11 @@ const bookingAvailabilityController = async (req, res) => {
 const pastAppointmentsController = async (req, res) => {
   try {
     const patientId = req.userId;
-    const currentDate = new Date().toISOString().slice(0, 10);
     const pastAppointments = await appointmentModel.findAll({
       attributes: { exclude: ["createdAt", "updatedAt"] },
       where: {
         patientId: patientId,
-        date: { [sequelize.Op.lt]: currentDate },
+        status: "completed",
       },
       include: [
         {
@@ -329,7 +328,6 @@ const pastAppointmentsController = async (req, res) => {
             "speciality",
             "experience",
           ],
-          // You may need to specify the association if there are multiple associations between the tables
           association: appointmentModel.belongsTo(doctorModel, {
             foreignKey: "doctorId",
           }),
@@ -354,13 +352,29 @@ const pastAppointmentsController = async (req, res) => {
 const futureAppointmentsController = async (req, res) => {
   try {
     const patientId = req.userId;
-    const currentDate = new Date().toISOString().slice(0, 10);
     const futureAppointments = await appointmentModel.findAll({
       attributes: { exclude: ["createdAt", "updatedAt"] },
       where: {
         patientId: patientId,
-        date: { [sequelize.Op.gte]: new Date(currentDate) },
+        status: "pending",
       },
+      include: [
+        {
+          model: doctorModel,
+          attributes: [
+            "name",
+            "phone",
+            "email",
+            "city",
+            "pincode",
+            "speciality",
+            "experience",
+          ],
+          association: appointmentModel.belongsTo(doctorModel, {
+            foreignKey: "doctorId",
+          }),
+        },
+      ],
     });
     return res.status(200).send({
       success: true,
