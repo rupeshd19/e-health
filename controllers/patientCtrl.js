@@ -10,7 +10,6 @@ const sequelize = require("sequelize");
 dotenv.config({
   path: "./routes/.env",
 });
-const dayjs = require("dayjs");
 
 function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
   const slots = [];
@@ -104,15 +103,21 @@ const getAllDoctorsController = async (req, res) => {
     // add verified doctor filter
     whereClause.isVerified = true;
     // add location filer
-    if (req.body.location) {
+    if (req.body.city) {
       whereClause.city = {
-        [sequelize.Op.like]: `%${req.body.location}%`,
+        [sequelize.Op.like]: `%${req.body.city}%`,
       };
     }
     // add speciality filter
     if (req.body.speciality) {
       whereClause.speciality = {
         [sequelize.Op.like]: `%${req.body.speciality}%`,
+      };
+    }
+    // add pincode filter
+    if (req.body.pincode) {
+      whereClause.pincode = {
+        [sequelize.Op.like]: `%${req.body.pincode}%`,
       };
     }
     // add max price filter
@@ -243,7 +248,7 @@ const bookAppointmentController = async (req, res) => {
 // Booking Availability Controller
 const bookingAvailabilityController = async (req, res) => {
   try {
-    await appointmentModel.sync();
+    await appointmentModel.sync({ alter: true });
     const doctorId = req.body.doctorId;
     // check requested date should not be past date
     var currentDate = new Date();
@@ -312,7 +317,26 @@ const pastAppointmentsController = async (req, res) => {
         patientId: patientId,
         date: { [sequelize.Op.lt]: currentDate },
       },
+      include: [
+        {
+          model: doctorModel,
+          attributes: [
+            "name",
+            "phone",
+            "email",
+            "city",
+            "pincode",
+            "speciality",
+            "experience",
+          ],
+          // You may need to specify the association if there are multiple associations between the tables
+          association: appointmentModel.belongsTo(doctorModel, {
+            foreignKey: "doctorId",
+          }),
+        },
+      ],
     });
+
     return res.status(200).send({
       success: true,
       data: pastAppointments,

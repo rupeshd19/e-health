@@ -28,6 +28,6 @@ const prescriptionModel = sequelize.define("prescriptionModel", {
   },
 });
 
-// prescriptionModel.belongsTo(appointmentModel);
-// appointmentModel.hasOne(prescriptionModel);
+prescriptionModel.belongsTo(appointmentModel);
+appointmentModel.hasMany(prescriptionModel);
 module.exports = prescriptionModel;

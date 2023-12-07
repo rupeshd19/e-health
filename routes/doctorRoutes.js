@@ -7,6 +7,7 @@ const {
   pastAppointmentsController,
   futureAppointmentsController,
   confirmAppointmentController,
+  createVcController,
 } = require("../controllers/doctorCtrl");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -36,5 +37,6 @@ router.post(
   authMiddleware,
   confirmAppointmentController
 );
-
+// POST create vritual conference
+router.post("/create-vc", authMiddleware, createVcController);
 module.exports = router;

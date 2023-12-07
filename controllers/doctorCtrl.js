@@ -1,7 +1,10 @@
 const appointmentModel = require("../models/appointmentModel");
 const doctorModel = require("../models/doctorModel");
 const userModel = require("../models/userModel");
-
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./routes/.env",
+});
 // get doctor info
 const getDoctorInfoController = async (req, res) => {
   try {
@@ -129,7 +132,6 @@ const confirmAppointmentController = async (req, res) => {
       { status: "confirmed" },
       { where: { id: appointmentId } }
     );
-
     res.status(200).send({
       success: true,
       message: "Appointment status is confirmed",
@@ -139,7 +141,24 @@ const confirmAppointmentController = async (req, res) => {
     res.status(500).send({
       success: false,
       error,
-      message: "Error in updating appointment status",
+      message: "Error in confirming  appointment ",
+    });
+  }
+};
+// code for doctor to launch/ craete virtual confrence
+const createVcController = async (req, res) => {
+  try {
+    const meetingId = patient.phone;
+    const meetingName = `${patient.name} Room`;
+    const modPass = "12345";
+    const attendeePass = "54321";
+    const joinName = doctor.password;
+    const apiKey = process.env.VC_Key;
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "error in creating VC, retry again",
+      error,
     });
   }
 };
@@ -151,4 +170,5 @@ module.exports = {
   pastAppointmentsController,
   futureAppointmentsController,
   confirmAppointmentController,
+  createVcController,
 };

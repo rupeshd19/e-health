@@ -1,22 +1,36 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("./index");
+const userModel = require("./userModel");
+const doctorModel = require("./doctorModel");
 
-const appointmentModel = sequelize.define(
+const AppointmentModel = sequelize.define(
   "appointmentModel",
   {
     patientId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: userModel,
+        key: "id",
+      },
     },
     doctorId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: doctorModel,
+        key: "id",
+      },
     },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
     },
     startTime: {
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+    endTime: {
       type: DataTypes.TIME,
       allowNull: false,
     },
@@ -40,4 +54,16 @@ const appointmentModel = sequelize.define(
   { timestamps: true }
 );
 
-module.exports = appointmentModel;
+AppointmentModel.belongsTo(userModel, {
+  foreignKey: "patientId",
+  as: "patient",
+});
+userModel.hasMany(AppointmentModel, { foreignKey: "patientId" });
+
+AppointmentModel.belongsTo(doctorModel, {
+  foreignKey: "doctorId",
+  as: "doctor",
+});
+doctorModel.hasMany(AppointmentModel, { foreignKey: "doctorId" });
+
+module.exports = AppointmentModel;
