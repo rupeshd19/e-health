@@ -14,10 +14,14 @@ const savePrescriptionController = async (req, res) => {
     const doctorNote = req.body.note;
     const medicines = req.body.medicines;
     // check wheher the doctor is authorised to save the prescription
-    const appointment = await appointmentModel.findOne({
-      attributes: ["id"],
-      where: { id: appoinmentId, doctorId: doctorId, patientId: patientId },
-    });
+    try {
+      const appointment = await appointmentModel.findOne({
+        attributes: ["id"],
+        where: { id: appoinmentId, doctorId: doctorId, patientId: patientId },
+      });
+    } catch (error) {
+      console.log(error);
+    }
     console.log("my appointment is : ", appointment);
     return res.status(200).send({
       success: true,

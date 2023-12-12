@@ -338,8 +338,9 @@ const endVcController = async (req, res) => {
         }
       );
     }
+
     return res.status(response.data.statusCode).send({
-      success: !response.data.isError,
+      success: response.data.isError,
       message: response.data.message,
     });
   } catch (error) {
