@@ -51,8 +51,8 @@ const AppointmentModel = sequelize.define(
       allowNull: true,
     },
     vclink: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.JSON,
+      defaultValue: { doctorLink: null, patientLink: null },
     },
     prescription: {
       type: DataTypes.STRING,

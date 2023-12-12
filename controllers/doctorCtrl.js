@@ -174,7 +174,15 @@ const createVcController = async (req, res) => {
     // check whether the doctor is as per requested appointmentId
 
     const appointment = await appointmentModel.findOne({
-      attributes: ["id", "doctorId", "patientId"],
+      attributes: [
+        "id",
+        "doctorId",
+        "patientId",
+        "vclink",
+        "modPass",
+        "attendeePass",
+        "status",
+      ],
       where: { id: appointmentId, doctorId: doctorId },
       include: [
         {
@@ -223,17 +231,15 @@ const createVcController = async (req, res) => {
       });
     if (!response.data.isError) {
       // update appointment table and save modPass and attendeePass
+      appointment.modPass = modPass;
+      appointment.attendeePass = attendeePass;
+      appointment.status = "running";
+      appointment.vclink = {
+        ...appointment.vclink,
+        doctorLink: response.data.joinUrl,
+      };
       try {
-        await appointmentModel.update(
-          {
-            modPass: modPass,
-            attendeePass: attendeePass,
-          },
-          {
-            where: { id: appointmentId },
-            returning: true,
-          }
-        );
+        await appointment.save();
       } catch (error) {
         console.log("my eeror is : ", error);
         return res.status(209).send({
@@ -324,6 +330,7 @@ const endVcController = async (req, res) => {
         {
           modPass: null,
           attendeePass: null,
+          vclink: { doctorLink: null, patientLink: null },
           status: "completed",
         },
         {

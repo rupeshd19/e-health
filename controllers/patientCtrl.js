@@ -400,7 +400,7 @@ const joinVcController = async (req, res) => {
     const appointmentId = req.body.appointmentId;
     // check wheher the doctor is authorised to end requested vc
     const appointment = await appointmentModel.findOne({
-      attributes: ["id", "patientId", "attendeePass"],
+      attributes: ["id", "patientId", "attendeePass", "vclink"],
       where: { id: appointmentId, patientId: patientId },
       include: [
         {
@@ -442,8 +442,25 @@ const joinVcController = async (req, res) => {
       .catch(function (err) {
         console.log(err);
       });
-    console.log(params);
+    // console.log(params);
+    // save the vc link for patient in data base
+    appointment.vclink = {
+      ...appointment.vclink,
+      patientLink: response.data.joinUrl,
+    };
+    try {
+      await appointment.save();
+    } catch (error) {
+      console.log("my eeror is : ", error);
+      return res.status(209).send({
+        success: false,
+        message: "error in updating joining link",
+        error,
+      });
+    }
+
     // if error send response message directly
+    console.log("my response from join request", response.data);
     if (response.data.statusCode != 200) {
       return res.status(response.data.statusCode).send({
         success: !response.data.isError,
