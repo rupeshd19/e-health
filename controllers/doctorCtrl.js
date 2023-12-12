@@ -116,7 +116,7 @@ const futureAppointmentsController = async (req, res) => {
     const doctorId = req.userId;
     const futureAppointments = await appointmentModel.findAll({
       attributes: { exclude: ["createdAt", "updatedAt"] },
-      where: { status: "pending" },
+      where: { status: ["pending", "running"] },
       include: [
         {
           model: userModel,
@@ -241,7 +241,7 @@ const createVcController = async (req, res) => {
       try {
         await appointment.save();
       } catch (error) {
-        console.log("my eeror is : ", error);
+        console.log("my error is : ", error);
         return res.status(209).send({
           success: false,
           message: "error in updating appointment credentials",

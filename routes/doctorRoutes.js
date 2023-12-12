@@ -11,6 +11,9 @@ const {
   endVcController,
 } = require("../controllers/doctorCtrl");
 const authMiddleware = require("../middlewares/authMiddleware");
+const {
+  savePrescriptionController,
+} = require("../controllers/prescriptionCtrl");
 const router = express.Router();
 
 //GET SINGLE DOC INFO
@@ -43,4 +46,6 @@ router.post("/create-vc", authMiddleware, createVcController);
 
 //POST end Virtual conference
 router.post("/end-vc", authMiddleware, endVcController);
+// POST save prescription
+router.post("/save-prescription", authMiddleware, savePrescriptionController);
 module.exports = router;

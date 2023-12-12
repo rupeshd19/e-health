@@ -358,7 +358,7 @@ const futureAppointmentsController = async (req, res) => {
       attributes: { exclude: ["createdAt", "updatedAt"] },
       where: {
         patientId: patientId,
-        status: "pending",
+        status: ["pending", "running"],
       },
       include: [
         {
