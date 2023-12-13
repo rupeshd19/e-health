@@ -22,7 +22,6 @@ const userModel = require("./models/userModel");
   try {
     // Sync the model with the database
     await userModel.sync({ force: false });
-
     console.log("Connected to the database".cyan);
   } catch (error) {
     console.error("Unable to connect to the database:", error);

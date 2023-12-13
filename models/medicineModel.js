@@ -25,7 +25,7 @@ const medicineModel = sequelize.define("medicineModel", {
 });
 
 // establish relation with  appointmentModel
-medicineModel.belongsTo(userModel, {
+medicineModel.belongsTo(appointmentModel, {
   foreignKey: "appointmentId",
   as: "appointment",
 });
