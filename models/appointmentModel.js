@@ -38,6 +38,10 @@ const AppointmentModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    doctorNote:{
+      type:DataTypes.STRING,
+      allowNull:true,
+    },
     status: {
       type: DataTypes.STRING,
       defaultValue: "pending",

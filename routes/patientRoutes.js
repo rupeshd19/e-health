@@ -10,6 +10,10 @@ const {
   futureAppointmentsController,
   joinVcController,
 } = require("../controllers/patientCtrl");
+const {
+  previousPrescriptionsController,
+  getPdfController,
+} = require("../controllers/prescriptionCtrl");
 
 //router object
 const router = express.Router();
@@ -43,4 +47,14 @@ router.get(
 );
 // POST join meeting as per appointmnet
 router.post("/join-vc", authMiddleware, joinVcController);
+
+// POST get previous prescriptions
+router.post(
+  "/get-previous-prescriptions",
+  authMiddleware,
+  previousPrescriptionsController
+);
+
+// POST get prescription pdf via link
+router.post("/get-prescription-pdf", authMiddleware, getPdfController);
 module.exports = router;

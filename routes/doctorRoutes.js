@@ -13,7 +13,9 @@ const {
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
   savePrescriptionController,
+  getPreviousPrescriptionsController,
 } = require("../controllers/prescriptionCtrl");
+const { get } = require("mongoose");
 const router = express.Router();
 
 //GET SINGLE DOC INFO
@@ -46,6 +48,15 @@ router.post("/create-vc", authMiddleware, createVcController);
 
 //POST end Virtual conference
 router.post("/end-vc", authMiddleware, endVcController);
+
 // POST save prescription
 router.post("/save-prescription", authMiddleware, savePrescriptionController);
+
+// POST get previous prescriptions of a patient
+router.post(
+  "/get-previous-prescriptions",
+  authMiddleware,
+  getPreviousPrescriptionsController
+);
+
 module.exports = router;

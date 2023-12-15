@@ -29,7 +29,10 @@ medicineModel.belongsTo(appointmentModel, {
   foreignKey: "appointmentId",
   as: "appointment",
 });
-appointmentModel.hasMany(medicineModel, { foreignKey: "appointmentId" });
+appointmentModel.hasMany(medicineModel, {
+  foreignKey: "appointmentId",
+  as: "medicines",
+});
 
 // export model
 module.exports = medicineModel;
