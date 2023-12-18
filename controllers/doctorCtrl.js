@@ -90,13 +90,7 @@ const pastAppointmentsController = async (req, res) => {
     const doctorId = req.userId;
     var pastAppointments = await appointmentModel.findAll({
       attributes: {
-        exclude: [
-          "createdAt",
-          "updatedAt",
-          "vclink",
-          "modPass",
-          "attendeePass",
-        ],
+        exclude: ["createdAt", "updatedAt", "modPass", "attendeePass"],
       },
       where: { status: "completed" },
       include: [
