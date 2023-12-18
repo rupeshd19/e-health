@@ -88,19 +88,32 @@ const getDoctorByIdController = async (req, res) => {
 const pastAppointmentsController = async (req, res) => {
   try {
     const doctorId = req.userId;
-    const pastAppointments = await appointmentModel.findAll({
-      attributes: { exclude: ["createdAt", "updatedAt"] },
+    var pastAppointments = await appointmentModel.findAll({
+      attributes: {
+        exclude: [
+          "createdAt",
+          "updatedAt",
+          "vclink",
+          "modPass",
+          "attendeePass",
+        ],
+      },
       where: { status: "completed" },
       include: [
         {
           model: userModel,
           attributes: ["name", "phone", "email", "pastDiseases"],
-          association: appointmentModel.belongsTo(userModel, {
-            foreignKey: "patientId",
-          }),
+          as: "patient",
+        },
+        {
+          model: medicineModel,
+          attributes: ["medicineName", "dosage", "duration"],
+          as: "medicines",
         },
       ],
     });
+    // edit list of jsons
+
     return res.status(200).send({
       success: true,
       message: "all past appointements ",
