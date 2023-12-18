@@ -130,7 +130,9 @@ const futureAppointmentsController = async (req, res) => {
   try {
     const doctorId = req.userId;
     const futureAppointments = await appointmentModel.findAll({
-      attributes: { exclude: ["createdAt", "updatedAt"] },
+      attributes: {
+        exclude: ["createdAt", "updatedAt", "modPass", "attendeePass"],
+      },
       where: { status: ["pending", "running"] },
       include: [
         {
@@ -140,8 +142,16 @@ const futureAppointmentsController = async (req, res) => {
             foreignKey: "patientId",
           }),
         },
+        {
+          model: medicineModel,
+          attributes: ["medicineName", "dosage", "duration"],
+          as: "medicines",
+        },
       ],
     });
+    if (!futureAppointments.medicines) {
+      futureAppointments.medicines = [];
+    }
     return res.status(200).send({
       success: true,
       message: "all future appointements ",
