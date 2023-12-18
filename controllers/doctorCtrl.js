@@ -103,7 +103,9 @@ const pastAppointmentsController = async (req, res) => {
         {
           model: userModel,
           attributes: ["name", "phone", "email", "pastDiseases"],
-          as: "patient",
+          association: appointmentModel.belongsTo(userModel, {
+            foreignKey: "patientId",
+          }),
         },
         {
           model: medicineModel,
