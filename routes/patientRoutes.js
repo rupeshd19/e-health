@@ -55,6 +55,4 @@ router.post(
   previousPrescriptionsController
 );
 
-// POST get prescription pdf via link
-router.post("/get-prescription-pdf", authMiddleware, getPdfController);
 module.exports = router;

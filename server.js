@@ -36,6 +36,8 @@ app.use(morgan("dev"));
 
 // solve cors error
 app.use(cors());
+// give permission for public files
+app.use(express.static("public"));
 
 //routes
 app.use("/api/v1/user", require("./routes/userRoutes")); // handle all login and register requests
