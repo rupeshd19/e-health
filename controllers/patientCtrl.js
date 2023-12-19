@@ -352,6 +352,21 @@ const pastAppointmentsController = async (req, res) => {
         },
       ],
     });
+    // sorting in decreasing order
+    pastAppointments.sort((a, b) => {
+      // Compare dates in descending order
+      const dateComparison =
+        new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
+
+      // If dates are equal, compare startTimes in descending order
+      const startTimeA = b.startTime.split(":").join("");
+      const startTimeB = a.startTime.split(":").join("");
+
+      return startTimeA.localeCompare(startTimeB);
+    });
 
     return res.status(200).send({
       success: true,
@@ -393,6 +408,27 @@ const futureAppointmentsController = async (req, res) => {
           }),
         },
       ],
+    });
+    // sort in increasing order
+    futureAppointments.sort((a, b) => {
+      // Compare dates
+      const dateComparison =
+        new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
+
+      // If dates are equal, compare startTimes
+      const startTimeA = a.startTime.split(":").map(Number);
+      const startTimeB = b.startTime.split(":").map(Number);
+
+      for (let i = 0; i < startTimeA.length; i++) {
+        if (startTimeA[i] !== startTimeB[i]) {
+          return startTimeA[i] - startTimeB[i];
+        }
+      }
+
+      return 0; // Dates and startTimes are equal
     });
     return res.status(200).send({
       success: true,

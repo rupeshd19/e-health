@@ -132,8 +132,21 @@ const previousPrescriptionsController = async (req, res) => {
         message: "no appointments exist",
       });
     }
+    // sort appointments in decreasing order
+    appointments.sort((a, b) => {
+      // Compare dates in descending order
+      const dateComparison =
+        new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
 
-    console.log(appointments);
+      // If dates are equal, compare startTimes in descending order
+      const startTimeA = b.startTime.split(":").join("");
+      const startTimeB = a.startTime.split(":").join("");
+
+      return startTimeA.localeCompare(startTimeB);
+    });
     // return success message
     return res.status(200).send({
       success: true,

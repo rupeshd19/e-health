@@ -85,7 +85,7 @@ const getDoctorByIdController = async (req, res) => {
   }
 };
 
-// get doctor's all  appointments
+// get doctor's all past  appointments
 const pastAppointmentsController = async (req, res) => {
   try {
     const doctorId = req.userId;
@@ -109,8 +109,21 @@ const pastAppointmentsController = async (req, res) => {
         },
       ],
     });
-    // edit list of jsons
+    // sort in decreasing order
+    pastAppointments.sort((a, b) => {
+      // Compare dates in descending order
+      const dateComparison =
+        new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
 
+      // If dates are equal, compare startTimes in descending order
+      const startTimeA = b.startTime.split(":").join("");
+      const startTimeB = a.startTime.split(":").join("");
+
+      return startTimeA.localeCompare(startTimeB);
+    });
     return res.status(200).send({
       success: true,
       message: "all past appointements ",
@@ -153,6 +166,27 @@ const futureAppointmentsController = async (req, res) => {
     if (!futureAppointments.medicines) {
       futureAppointments.medicines = [];
     }
+    // sort in increasing order
+    futureAppointments.sort((a, b) => {
+      // Compare dates
+      const dateComparison =
+        new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
+
+      // If dates are equal, compare startTimes
+      const startTimeA = a.startTime.split(":").map(Number);
+      const startTimeB = b.startTime.split(":").map(Number);
+
+      for (let i = 0; i < startTimeA.length; i++) {
+        if (startTimeA[i] !== startTimeB[i]) {
+          return startTimeA[i] - startTimeB[i];
+        }
+      }
+
+      return 0; // Dates and startTimes are equal
+    });
     return res.status(200).send({
       success: true,
       message: "all future appointements ",
