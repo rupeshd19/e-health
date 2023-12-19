@@ -269,7 +269,7 @@ const bookingAvailabilityController = async (req, res) => {
 
     providedDate.setHours(currentDate.getHours() + 1);
     if (providedDate < currentDate) {
-      res.status(209).send({
+      return res.status(209).send({
         success: false,
         message: "Please provide future date",
       });
@@ -285,7 +285,7 @@ const bookingAvailabilityController = async (req, res) => {
     });
     // if doctor not found return
     if (!doctor) {
-      return res.status(209).send({
+      return res.status(400).send({
         success: false,
         message: "doctor not found",
       });
