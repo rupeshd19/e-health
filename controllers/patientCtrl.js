@@ -13,7 +13,13 @@ dotenv.config({
   path: "./routes/.env",
 });
 
-function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
+function generateTimeSlots(
+  openTime,
+  closeTime,
+  slotDuration,
+  startTimeList,
+  today
+) {
   const slots = [];
 
   // Parse openTime and closeTime strings to Date objects
@@ -22,6 +28,10 @@ function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
 
   // Calculate the number of milliseconds in the slot duration
   const slotDurationMs = slotDuration * 60 * 1000;
+  const now = new Date(); // Get the current date and time
+  let presentTimeString = now.toTimeString().slice(0, 8);
+  //  Get the minutes and pad with leading zero if needed
+  // presentTime = new Date(`1970-01-01T${presentTime}`);
 
   // Initialize the current time to the open time
   let currentTime = openDateTime;
@@ -34,11 +44,12 @@ function generateTimeSlots(openTime, closeTime, slotDuration, startTimeList) {
 
     // Check if the startTime is in the startTimeList
     if (!startTimeList.includes(startTimeString)) {
-      // Add the slot to the list
-      slots.push({
-        startTime: startTimeString.slice(0, 5),
-        endTime: endTimeString.slice(0, 5),
-      });
+      if (!(today && presentTimeString > startTimeString)) {
+        slots.push({
+          startTime: startTimeString.slice(0, 5),
+          endTime: endTimeString.slice(0, 5),
+        });
+      }
     }
 
     // Move to the next slot
@@ -263,6 +274,10 @@ const bookingAvailabilityController = async (req, res) => {
         message: "Please provide future date",
       });
     }
+    let today = false;
+    if (currentDate.toDateString() == providedDate.toDateString()) {
+      today = true;
+    }
     // fetch doctor details
     const doctor = await doctorModel.findOne({
       attributes: ["openTime", "closeTime", "slotDuration"],
@@ -293,7 +308,8 @@ const bookingAvailabilityController = async (req, res) => {
       doctor.openTime,
       doctor.closeTime,
       doctor.slotDuration,
-      startTimeList
+      startTimeList,
+      today
     );
     return res.status(200).send({
       success: true,
