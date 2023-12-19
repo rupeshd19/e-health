@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const crypto = require("crypto");
 dotenv.config({
   path: "./routes/.env",
 });
@@ -237,7 +238,7 @@ const createVcController = async (req, res) => {
     const params = {
       requestName: "createVC",
       meetingID: appointment.patient.phone,
-      meetingName: appointment.doctor.name + "Room ",
+      meetingName: appointment.doctor.name + " Room ",
       modPass: modPass,
       attendeePass: attendeePass,
       joinName: appointment.doctor.name,
@@ -374,21 +375,16 @@ const endVcController = async (req, res) => {
         console.log(err);
       });
     // if meeting is successfully ended craete  a pdf
-    // create pdf if meeting ended successfully
-    function generateRandomString(length) {
-      const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let randomString = "";
-      for (let i = 0; i < length; i++) {
-        randomString += characters.charAt(
-          Math.floor(Math.random() * characters.length)
-        );
-      }
-      return randomString;
-    }
+    // Create a unique identifier combining appointment and doctor IDs
+    const uniqueIdentifier = appointment.id + "_" + appointment.doctorId;
 
-    // craete filename and filepath
-    const pdfFileName = `${generateRandomString(30)}.pdf`;
+    // Generate a hash for the unique identifier using crypto
+    const hashedIdentifier = crypto
+      .createHash("md5")
+      .update(uniqueIdentifier)
+      .digest("hex");
+    // create filename and filepath
+    const pdfFileName = `prescription_${hashedIdentifier}.pdf`;
     const pdfFilePath = path.join(__dirname, "../public", pdfFileName); // Path to save the PDF
 
     try {
@@ -420,8 +416,6 @@ const endVcController = async (req, res) => {
       });
 
       // Generate PDF content based on your data
-      doc.addPage(); // Add a new page for each appointment after the first
-
       // Date and Time in the Header (Top Left)
       doc
         .font("Helvetica-Bold")
@@ -585,6 +579,7 @@ const endVcController = async (req, res) => {
 
     // update parameters
     if (!response.data.isError) {
+      appointment.prescription = `http://localhost:9000/${pdfFileName}`;
       await appointmentModel.update(
         {
           modPass: null,
@@ -602,7 +597,7 @@ const endVcController = async (req, res) => {
     return res.status(response.data.statusCode).send({
       success: response.data.isError,
       message: response.data.message,
-      prescriptionLink: `http://localhost:9000/${pdfFileName}`,
+      prescriptionLink: appointment.prescription,
     });
   } catch (error) {
     return res.status(500).send({

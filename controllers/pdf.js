@@ -22,11 +22,8 @@ try {
     console.log("PDF created successfully.");
   });
 
-  // Pipe the PDF content to the file
-  // doc.pipe(outputStream);
-
   // Generate PDF content based on your data
-  doc.addPage(); // Add a new page for each appointment after the first
+  // doc.addPage(); // Add a new page for each appointment after the first
 
   // Date and Time in the Header (Top Left)
   doc
