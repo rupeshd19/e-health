@@ -344,7 +344,7 @@ const endVcController = async (req, res) => {
         "patientId",
         "modPass",
         [sequelize.literal("SUBSTRING(`date`, 1, 10)"), "date"],
-        ["note", "patientNote"],
+        "note",
         "doctorNote",
         "startTime",
         "prescription",
@@ -509,7 +509,7 @@ const endVcController = async (req, res) => {
         .font("Helvetica")
         .fontSize(12)
         .text(
-          `Patient Note: ${appointment.patientNote}`,
+          `Patient Note: ${appointment.note}`,
           patientInfoX,
           patientInfoY + 20
         );
